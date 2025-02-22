@@ -25,4 +25,4 @@ def embed_text():
 if __name__ == "__main__":
     CORS(app)
     logging.basicConfig(level=logging.INFO)
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5000)
