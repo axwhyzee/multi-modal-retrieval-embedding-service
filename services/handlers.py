@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from event_core.adapters.storage import get
+from event_core.adapters.services.api.storage import get
 from event_core.domain.events import ChunkStored
 
 from adapters.model import CLIP

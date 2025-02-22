@@ -2,7 +2,7 @@ blinker==1.9.0
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
-event_core @ git+https://github.com/axwhyzee/multi-modal-retrieval-event-core.git@d257960225b6a591a6b7b9b566b2f1d8dba4babc
+event_core @ git+https://github.com/axwhyzee/multi-modal-retrieval-event-core.git@102ef683133cee108bdd81fdb9654e968d708425
 filelock==3.17.0
 Flask==3.1.0
 Flask-Cors==5.0.0
