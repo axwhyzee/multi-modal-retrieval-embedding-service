@@ -34,7 +34,7 @@ class PineconeRepo(AbstractVectorRepo):
         self._index = pc.Index(INDEX_NAME)
 
     def insert(self, key: str, vec: List[float]) -> None:
-        user = key.split("/")[1]
+        user = key.split("/")[0]
         logger.info(f"Inserting {key=} for {user=}")
         self._index.upsert(
             vectors=[{"id": key, "values": vec}], namespace=user
