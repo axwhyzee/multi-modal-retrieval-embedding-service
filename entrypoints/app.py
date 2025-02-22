@@ -3,7 +3,7 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 
-from services.handlers import handle_embed_text, handle_text_query
+from handlers import handle_embed_text, handle_text_query
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)

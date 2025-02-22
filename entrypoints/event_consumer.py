@@ -3,7 +3,7 @@ import logging
 from event_core.adapters.pubsub import RedisConsumer
 from event_core.domain.events import ChunkStored
 
-from services.handlers import handle_chunk
+from handlers import handle_chunk
 
 logger = logging.getLogger(__name__)
 
