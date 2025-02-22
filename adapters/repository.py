@@ -48,4 +48,4 @@ class PineconeRepo(AbstractVectorRepo):
             include_values=False,
             include_metadata=False,
         )
-        return list(map(lambda match:match["id"], results["matches"]))
+        return list(map(lambda match: match["id"], results["matches"]))

@@ -32,5 +32,9 @@ def handle_chunk(event: ChunkStored) -> None:
 
 
 def handle_text_query(user: str, text: str) -> List[str]:
-    vec =  model.embed_text(text)
+    vec = model.embed_text(text)
     return repo.query(user, vec)
+
+
+def handle_embed_text(text: str) -> List[float]:
+    return model.embed_text(text)
