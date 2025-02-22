@@ -16,7 +16,7 @@ def handle_chunk(event: ChunkStored) -> None:
     key = event.key
     user = key.split("/")[0]
     data = get(key)
-    suffix = Path(key).suffix
+    suffix = Path(event.parent_key).suffix
 
     indexer = INDEXERS[suffix]
     vec = indexer.embed(data)
