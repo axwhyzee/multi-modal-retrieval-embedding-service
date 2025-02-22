@@ -1,3 +1,2 @@
-tests/data/* filter=lfs diff=lfs merge=lfs -text
 assets/clip-vit-large-patch14-336/*.h5 filter=lfs diff=lfs merge=lfs -text
 assets/clip-vit-large-patch14-336/*.bin filter=lfs diff=lfs merge=lfs -text
