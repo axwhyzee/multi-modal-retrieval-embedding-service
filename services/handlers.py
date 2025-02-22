@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List, TypeAlias
 
 from event_core.adapters.services.api.storage import get
 from event_core.domain.events import ChunkStored
@@ -9,6 +9,8 @@ from services.indexer import INDEXERS, model
 
 repo = PineconeRepo()
 
+KeysT: TypeAlias = List[str]
+ModalityT: TypeAlias = str
 
 def handle_chunk(event: ChunkStored) -> None:
     key = event.key
@@ -22,9 +24,15 @@ def handle_chunk(event: ChunkStored) -> None:
     repo.insert(namespace, key, vec)
 
 
-def handle_text_query(user: str, text: str) -> List[str]:
+def handle_text_query(user: str, text: str) -> Dict[ModalityT, KeysT]:
+    res = {}
     vec = model.embed_text(text)
-    return repo.query(user, vec)
+    for indexer in INDEXERS.values():
+        modality = indexer.get_modality()
+        namespace = indexer.get_namespace(user)
+        keys = repo.query(namespace, user, vec)
+        res[modality] = keys
+    return res
 
 
 def handle_embed_text(text: str) -> List[float]:
