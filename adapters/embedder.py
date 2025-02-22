@@ -10,7 +10,7 @@ from transformers import (  # type: ignore
     CLIPVisionModelWithProjection,
 )
 
-from config import MODEL_PATH
+from config import EMBEDDER_MODEL
 
 
 def _norm(features: torch.Tensor):
@@ -30,9 +30,11 @@ class AbstractModel(ABC):
 
 
 class CLIP(AbstractModel):
-    _text_model = CLIPTextModelWithProjection.from_pretrained(MODEL_PATH)
-    _vision_model = CLIPVisionModelWithProjection.from_pretrained(MODEL_PATH)
-    _processor = CLIPProcessor.from_pretrained(MODEL_PATH)
+    _text_model = CLIPTextModelWithProjection.from_pretrained(EMBEDDER_MODEL)
+    _vision_model = CLIPVisionModelWithProjection.from_pretrained(
+        EMBEDDER_MODEL
+    )
+    _processor = CLIPProcessor.from_pretrained(EMBEDDER_MODEL)
 
     @classmethod
     def embed_text(cls, text: str) -> List[float]:

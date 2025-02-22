@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from enum import StrEnum
 from typing import List
 
 from pinecone import Pinecone, ServerlessSpec  # type: ignore
@@ -9,13 +10,21 @@ from config import EMBEDDING_DIM, INDEX_NAME, get_pinecone_api_key
 logger = logging.getLogger(__name__)
 
 
+class Modality(StrEnum):
+    IMAGE = "IMAGE"
+    TEXT = "TEXT"
+    VIDEO = "VIDEO"
+
+
 class AbstractVectorRepo(ABC):
     @abstractmethod
-    def insert(self, key: str, vec: List[float]) -> None:
+    def insert(self, namespace: str, key: str, vec: List[float]) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def query(self, user: str, vec: List[float], top_k: int = 5) -> List[str]:
+    def query(
+        self, namespace: str, vec: List[float], top_k: int = 5
+    ) -> List[str]:
         raise NotImplementedError
 
 
@@ -33,16 +42,17 @@ class PineconeRepo(AbstractVectorRepo):
             )
         self._index = pc.Index(INDEX_NAME)
 
-    def insert(self, key: str, vec: List[float]) -> None:
-        user = key.split("/")[0]
-        logger.info(f"Inserting {key=} for {user=}")
+    def insert(self, namespace: str, key: str, vec: List[float]) -> None:
+        logger.info(f"Inserting {key=} in {namespace=}")
         self._index.upsert(
-            vectors=[{"id": key, "values": vec}], namespace=user
+            vectors=[{"id": key, "values": vec}], namespace=namespace
         )
 
-    def query(self, user: str, vec: List[float], top_k: int = 5) -> List[str]:
+    def query(
+        self, namespace: str, vec: List[float], top_k: int = 5
+    ) -> List[str]:
         results = self._index.query(
-            namespace=user,
+            namespace=namespace,
             vector=vec,
             top_k=top_k,
             include_values=False,

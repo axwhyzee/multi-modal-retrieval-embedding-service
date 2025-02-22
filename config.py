@@ -6,7 +6,9 @@ load_dotenv(find_dotenv())
 
 
 # https://huggingface.co/openai/clip-vit-large-patch14-336
-MODEL_PATH = "assets/clip-vit-large-patch14-336"
+EMBEDDER_MODEL = "openai/clip-vit-large-patch14-336"
+
+TEXT_TEXT_RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
 
 EMBEDDING_DIM = 768
 
