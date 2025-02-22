@@ -10,8 +10,6 @@ from transformers import (  # type: ignore
     CLIPVisionModelWithProjection,
 )
 
-from config import EMBEDDER_MODEL
-
 
 def _norm(features: torch.Tensor):
     return features / features.norm(dim=-1, keepdim=True)
@@ -30,11 +28,15 @@ class AbstractModel(ABC):
 
 
 class CLIP(AbstractModel):
-    _text_model = CLIPTextModelWithProjection.from_pretrained(EMBEDDER_MODEL)
-    _vision_model = CLIPVisionModelWithProjection.from_pretrained(
-        EMBEDDER_MODEL
+    _text_model = CLIPTextModelWithProjection.from_pretrained(
+        "openai/clip-vit-large-patch14-336"
     )
-    _processor = CLIPProcessor.from_pretrained(EMBEDDER_MODEL)
+    _vision_model = CLIPVisionModelWithProjection.from_pretrained(
+        "openai/clip-vit-large-patch14-336"
+    )
+    _processor = CLIPProcessor.from_pretrained(
+        "openai/clip-vit-large-patch14-336"
+    )
 
     @classmethod
     def embed_text(cls, text: str) -> List[float]:
