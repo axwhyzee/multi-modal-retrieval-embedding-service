@@ -35,7 +35,7 @@ def handle_query_text(user: str, text: str) -> Dict[Modality, KeysT]:
     vec = model.embed_text(text)
 
     for indexer in INDEXERS.values():
-        modality = indexer.get_modality()
+        modality = indexer.modality
         namespace = indexer.get_namespace(user)
         keys = repo.query(namespace, vec)
 
@@ -44,7 +44,3 @@ def handle_query_text(user: str, text: str) -> Dict[Modality, KeysT]:
         res[modality] = [keys[i] for i in ranks]
 
     return res
-
-
-def handle_embed_text(text: str) -> List[float]:
-    return model.embed_text(text)

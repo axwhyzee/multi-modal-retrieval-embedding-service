@@ -36,13 +36,14 @@ TEST_IMG_DATA = (Path("tests/data") / "test.png").read_bytes()
     ),
 )
 def test_text_indexer_generates_correct_namespace_and_embedding(
-    event: ChunkStored, expected_namespace: str, data: bytes
+    event: ChunkStored, data: bytes, expected_namespace: str
 ) -> None:
     suffix = Path(event.parent_key).suffix
     indexer = INDEXERS[suffix]
     vec = indexer.embed(data)
     user = event.parent_key.split("/")[0]
     namespace = indexer.get_namespace(user)
+
     assert type(vec) == list
     assert type(vec[0]) == float
     assert namespace == expected_namespace

@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
-from typing import Dict, List, Type
+from abc import abstractmethod
+from typing import Dict, List, Type, Protocol, ClassVar
 
 from adapters.embedder import CLIP
 from adapters.types import Modality
@@ -7,50 +7,41 @@ from adapters.types import Modality
 model = CLIP
 
 
-class AbstractIndexerFactory(ABC):
-    @classmethod
-    @abstractmethod
-    def embed(cls, obj: bytes) -> List[float]:
-        raise NotImplementedError
+class AbstractIndexerFactory(Protocol):
+    modality: ClassVar[Modality]
 
     @classmethod
     @abstractmethod
-    def get_modality(cls) -> Modality:
+    def embed(cls, obj: bytes) -> List[float]:
         raise NotImplementedError
 
     @classmethod
     def get_namespace(cls, user: str) -> str:
-        return f"{user}__{cls.get_modality()}"
+        return f"{user}__{cls.modality}"
 
 
 class TextIndexer(AbstractIndexerFactory):
+    modality = Modality.TEXT
+
     @classmethod
     def embed(cls, obj: bytes) -> List[float]:
         return model.embed_text(obj.decode("utf-8"))
 
-    @classmethod
-    def get_modality(cls) -> Modality:
-        return Modality.TEXT
-
 
 class ImageIndexer(AbstractIndexerFactory):
+    modality = Modality.IMAGE
+
     @classmethod
     def embed(cls, obj: bytes) -> List[float]:
         return model.embed_image(obj)
-
-    @classmethod
-    def get_modality(cls) -> Modality:
-        return Modality.IMAGE
 
 
 class VideoIndexer(AbstractIndexerFactory):
+    modality = Modality.VIDEO
+
     @classmethod
     def embed(cls, obj: bytes) -> List[float]:
         return model.embed_image(obj)
-
-    @classmethod
-    def get_modality(cls) -> Modality:
-        return Modality.VIDEO
 
 
 INDEXERS: Dict[str, Type[AbstractIndexerFactory]] = {

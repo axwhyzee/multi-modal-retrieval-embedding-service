@@ -16,12 +16,6 @@ def query_text():
     return handle_query_text(user, text)
 
 
-@app.route("/embed/text", methods=["GET"])
-def embed_text():
-    text: str = request.args["text"]
-    return handle_embed_text(text)
-
-
 if __name__ == "__main__":
     CORS(app)
     logging.basicConfig(level=logging.INFO)
