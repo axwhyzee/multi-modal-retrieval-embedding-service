@@ -31,14 +31,17 @@ def handle_chunk(
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
 ) -> None:
     logger.info(f"Handling chunk {event=}")
-    key = event.parent_key
-    user = _user_from_key(key)
-    modal = get_modal(key)
-    embedder = ModalToChunkEmbedder[modal]
+    obj_key = event.key
+    par_key = event.parent_key
+    user = _user_from_key(obj_key)
+    par_modal = get_modal(par_key)
+    obj_modal = get_modal(obj_key)
 
-    vec = embedder.embed(get(key))
-    namespace = _get_namespace(user, modal)
-    vec_repo.insert(namespace, key, vec)
+    embedder = ModalToChunkEmbedder[obj_modal]
+
+    vec = embedder.embed(get(obj_key))
+    namespace = _get_namespace(user, par_modal)
+    vec_repo.insert(namespace, obj_key, vec)
 
 
 @inject
