@@ -3,7 +3,8 @@ import logging
 from flask import Flask, request
 from flask_cors import CORS
 
-from services.handlers import handle_embed_text, handle_query_text
+from bootstrap import bootstrap
+from services.handlers import handle_query_text
 
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
@@ -17,6 +18,8 @@ def query_text():
 
 
 if __name__ == "__main__":
-    CORS(app)
     logging.basicConfig(level=logging.INFO)
-    app.run(debug=True, port=5003)
+    bootstrap()
+
+    CORS(app)
+    app.run(port=5003, debug=True)

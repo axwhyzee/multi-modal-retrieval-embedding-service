@@ -1,8 +1,14 @@
+from pathlib import Path
 from typing import Dict, List
 
+import pytest
+
 from adapters.repository import AbstractVectorRepo
+from bootstrap import bootstrap
 
 VectorT = List[float]
+
+TEST_DIR = Path("tests/data")
 
 
 class FakeVectorRepo(AbstractVectorRepo):
@@ -17,3 +23,16 @@ class FakeVectorRepo(AbstractVectorRepo):
         self, namespace: str, vec: List[float], top_k: int = 5
     ) -> List[str]:
         return []
+
+
+@pytest.fixture
+def test_img_data() -> bytes:
+    return (TEST_DIR / "test.png").read_bytes()
+
+
+@pytest.fixture
+def test_txt_data() -> bytes:
+    return (TEST_DIR / "test.txt").read_bytes()
+
+
+bootstrap()

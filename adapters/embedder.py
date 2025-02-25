@@ -1,8 +1,10 @@
+import logging
 from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import List
 
 import torch
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from PIL import Image
 from transformers import (  # type: ignore
     CLIPProcessor,
@@ -10,51 +12,60 @@ from transformers import (  # type: ignore
     CLIPVisionModelWithProjection,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def _norm(features: torch.Tensor):
     return features / features.norm(dim=-1, keepdim=True)
 
 
-class AbstractModel(ABC):
-    @classmethod
+class AbstractEmbeddingModel(ABC):
     @abstractmethod
-    def embed_text(cls, text: str) -> List[float]:
+    def embed_text(self, text: str) -> List[float]:
         raise NotImplementedError
 
-    @classmethod
     @abstractmethod
-    def embed_image(cls, img: bytes) -> List[float]:
+    def embed_image(self, img: bytes) -> List[float]:
         raise NotImplementedError
 
 
-class CLIP(AbstractModel):
-    _text_model = CLIPTextModelWithProjection.from_pretrained(
-        "openai/clip-vit-large-patch14-336"
-    )
-    _vision_model = CLIPVisionModelWithProjection.from_pretrained(
-        "openai/clip-vit-large-patch14-336"
-    )
-    _processor = CLIPProcessor.from_pretrained(
-        "openai/clip-vit-large-patch14-336"
-    )
+class CLIPEmbedder(AbstractEmbeddingModel):
+    def __init__(self):
+        logger.info("Initializing openai/clip-vit-base-patch32")
+        self._text_model = CLIPTextModelWithProjection.from_pretrained(
+            "openai/clip-vit-base-patch32"
+        )
+        self._vision_model = CLIPVisionModelWithProjection.from_pretrained(
+            "openai/clip-vit-base-patch32"
+        )
+        self._processor = CLIPProcessor.from_pretrained(
+            "openai/clip-vit-base-patch32"
+        )
 
-    @classmethod
-    def embed_text(cls, text: str) -> List[float]:
-        inputs = cls._processor(text=[text], return_tensors="pt", padding=True)
-        outputs = cls._text_model(**inputs)
+    def embed_text(self, text: str) -> List[float]:
+        text_splitter = (
+            RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
+                self._processor.tokenizer,
+                chunk_size=77,  # CLIP has hard limit of 77
+                chunk_overlap=15,
+            )
+        )
+        texts = text_splitter.split_text(text)
+        inputs = self._processor(text=texts, return_tensors="pt", padding=True)
+        outputs = self._text_model(**inputs)
         emb: torch.Tensor
         emb = outputs.text_embeds
+        emb = emb.mean(dim=0)
         emb = emb.reshape(-1)
         emb = _norm(emb)
         return emb.tolist()
 
-    @classmethod
-    def embed_image(cls, img: bytes) -> List[float]:
+    def embed_image(self, img: bytes) -> List[float]:
         image = Image.open(BytesIO(img))
-        inputs = cls._processor(
+        inputs = self._processor(
             images=image, return_tensors="pt", padding=True
         )
-        outputs = cls._vision_model(**inputs)
+        outputs = self._vision_model(**inputs)
         emb: torch.Tensor
         emb = outputs.image_embeds
         emb = emb.reshape(-1)

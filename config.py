@@ -5,7 +5,7 @@ from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 
 
-EMBEDDING_DIM = 768
+EMBEDDING_DIM = 512
 
 INDEX_NAME = "multi-modal-vectors"
 
