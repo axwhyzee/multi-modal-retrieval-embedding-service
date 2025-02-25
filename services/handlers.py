@@ -48,6 +48,8 @@ def handle_chunk(
 def handle_query_text(
     user: str,
     text: str,
+    n_cands: int,
+    n_rank: int,
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     rerankers: Dict[Modal, AbstractDualModalReranker] = Provide[
@@ -59,11 +61,11 @@ def handle_query_text(
     vec = emb_model.embed_text(text)
     for modal in Modal:
         namespace = _get_namespace(user, modal)
-        keys = vec_repo.query(namespace, vec)
+        keys = vec_repo.query(namespace, vec, n_cands)
         if not keys:
             res[modal] = []
             continue
         reranker = rerankers[modal]
-        ranks = reranker.rerank(text, [get(key) for key in keys])
+        ranks = reranker.rerank(text, [get(key) for key in keys], n_rank)
         res[modal] = [keys[i] for i in ranks]
     return res

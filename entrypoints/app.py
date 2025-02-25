@@ -14,7 +14,9 @@ app = Flask(__name__)
 def query_text():
     user: str = request.args["user"]
     text: str = request.args["text"]
-    return handle_query_text(user, text)
+    n_cands: int = request.args["n_cands"]
+    n_rank: int = request.args["n_rank"]
+    return handle_query_text(user, text, n_cands, n_rank)
 
 
 if __name__ == "__main__":
