@@ -1,4 +1,5 @@
 from dependency_injector import containers, providers
+from event_core.adapters.services.storage import StorageAPIClient
 from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPEmbedder
@@ -17,6 +18,7 @@ MODULES = (
 class DIContainer(containers.DeclarativeContainer):
     vec_repo = providers.Singleton(PineconeRepo)
     emb_model = providers.Singleton(CLIPEmbedder)
+    storage_client = providers.Singleton(StorageAPIClient)
 
     _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)

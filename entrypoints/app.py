@@ -22,6 +22,5 @@ def query_text():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     bootstrap()
-
     CORS(app)
     app.run(port=5003, debug=True)

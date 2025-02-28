@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 TOP_K = 5
 
 
-class AbstractDualModalReranker(ABC):
+class AbstractReranker(ABC):
     @abstractmethod
     def rerank(
         self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
@@ -24,7 +24,7 @@ class AbstractDualModalReranker(ABC):
         raise NotImplementedError
 
 
-class BgeReranker(AbstractDualModalReranker):
+class BgeReranker(AbstractReranker):
     def __init__(self):
         logger.info("Initializing BAAI/bge-reranker-v2-m3")
         self._tokenizer = AutoTokenizer.from_pretrained(
@@ -59,7 +59,7 @@ class BgeReranker(AbstractDualModalReranker):
         return [i for _, i in sorted(idx_scores, reverse=True)[:top_k]]
 
 
-class ColpaliReranker(AbstractDualModalReranker):
+class ColpaliReranker(AbstractReranker):
     def __init__(self):
         logger.info("Initializing vidore/colpali-v1.2")
         self._model = ColPali.from_pretrained(
@@ -73,7 +73,6 @@ class ColpaliReranker(AbstractDualModalReranker):
         self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
         images = [Image.open(BytesIO(cand)) for cand in candidates]
-        print(images)
         batch_images = self._processor.process_images(images).to(
             self._model.device
         )
