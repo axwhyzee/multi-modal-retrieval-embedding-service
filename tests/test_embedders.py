@@ -1,7 +1,7 @@
 import pytest
 from event_core.domain.events import ChunkStored
+from event_core.domain.types import Modal
 
-from adapters.types import get_modal
 from config import EMBEDDING_DIM
 from services.factory import ModalToChunkEmbedder
 
@@ -10,18 +10,15 @@ from services.factory import ModalToChunkEmbedder
     "event,fixture_data",
     (
         (
-            ChunkStored(parent_key="user1/test.txt", key="user1/test.txt"),
+            ChunkStored(key="user1/test.txt", modal=Modal.TEXT),
             "test_txt_data",
         ),
         (
-            ChunkStored(parent_key="user2/test.mp4", key="user2/test.png"),
+            ChunkStored(key="user2/test.png", modal=Modal.IMAGE),
             "test_img_data",
         ),
         (
-            ChunkStored(
-                parent_key="user3/test.png",
-                key="user3/test.png",
-            ),
+            ChunkStored(key="user3/test.png", modal=Modal.IMAGE),
             "test_img_data",
         ),
     ),
@@ -30,7 +27,7 @@ def test_embedder_generates_vector_with_correct_dim(
     event: ChunkStored, fixture_data: str, request: pytest.FixtureRequest
 ) -> None:
     data = request.getfixturevalue(fixture_data)
-    modal = get_modal(event.parent_key)
+    modal = event.modal
     embedder = ModalToChunkEmbedder[modal]
     vec = embedder.embed(data)
 

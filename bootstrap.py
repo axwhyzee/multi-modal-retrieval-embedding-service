@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from dependency_injector import containers, providers
+from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPEmbedder
 from adapters.repository import PineconeRepo
@@ -9,7 +10,6 @@ from adapters.reranker import (
     BgeReranker,
     ColpaliReranker,
 )
-from adapters.types import Modal
 
 
 class DIContainer(containers.DeclarativeContainer):

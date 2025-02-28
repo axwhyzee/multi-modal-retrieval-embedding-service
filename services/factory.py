@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Type
 
 from dependency_injector.wiring import Provide, inject
+from event_core.domain.types import Modal
 
 from adapters.embedder import AbstractEmbeddingModel
-from adapters.types import FileExt, Modal
 from bootstrap import DIContainer
 
 

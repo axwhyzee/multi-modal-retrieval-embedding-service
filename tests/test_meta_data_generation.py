@@ -1,7 +1,7 @@
 import pytest
 from event_core.domain.events import ChunkStored
+from event_core.domain.types import Modal
 
-from adapters.types import get_modal
 from services.handlers import _get_namespace, _user_from_key
 
 
@@ -24,18 +24,15 @@ def test_user_from_key(key: str, expected_user: str) -> None:
     "event,expected_namespace",
     (
         (
-            ChunkStored(parent_key="user1/test.txt", key="user1/test.txt"),
+            ChunkStored(key="user1/test.txt", modal=Modal.TEXT),
             "user1__TEXT",
         ),
         (
-            ChunkStored(parent_key="user2/test.mp4", key="user2/test.png"),
+            ChunkStored(key="user2/test.png", modal=Modal.VIDEO),
             "user2__VIDEO",
         ),
         (
-            ChunkStored(
-                parent_key="user3/test.png",
-                key="user3/test.png",
-            ),
+            ChunkStored(key="user3/test.png", modal=Modal.IMAGE),
             "user3__IMAGE",
         ),
     ),
@@ -44,6 +41,6 @@ def test_namespace_from_event(
     event: ChunkStored, expected_namespace: str
 ) -> None:
     user = _user_from_key(event.key)
-    modal = get_modal(event.parent_key)
+    modal = event.modal
     namespace = _get_namespace(user, modal)
     assert namespace == expected_namespace
