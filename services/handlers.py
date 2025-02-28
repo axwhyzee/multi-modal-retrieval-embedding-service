@@ -4,11 +4,11 @@ from typing import Dict, List, TypeAlias
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.api.storage import get
 from event_core.domain.events import ChunkStored
+from event_core.domain.types import Modal
 
 from adapters.embedder import AbstractEmbeddingModel
 from adapters.repository import AbstractVectorRepo
 from adapters.reranker import AbstractDualModalReranker
-from adapters.types import Modal, get_modal
 from bootstrap import DIContainer
 from services.factory import ModalToChunkEmbedder
 
