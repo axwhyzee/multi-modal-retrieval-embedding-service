@@ -31,17 +31,14 @@ def handle_chunk(
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
 ) -> None:
     logger.info(f"Handling chunk {event=}")
-    obj_key = event.key
-    par_key = event.parent_key
-    user = _user_from_key(obj_key)
-    par_modal = get_modal(par_key)
-    obj_modal = get_modal(obj_key)
+    key = event.key
+    modal = event.modal
+    user = _user_from_key(key)
 
-    embedder = ModalToChunkEmbedder[obj_modal]
-
-    vec = embedder.embed(get(obj_key))
-    namespace = _get_namespace(user, par_modal)
-    vec_repo.insert(namespace, obj_key, vec)
+    embedder = ModalToChunkEmbedder[modal]
+    vec = embedder.embed(get(key))
+    namespace = _get_namespace(user, modal)
+    vec_repo.insert(namespace, key, vec)
 
 
 @inject
@@ -62,6 +59,7 @@ def handle_query_text(
     for modal in Modal:
         namespace = _get_namespace(user, modal)
         keys = vec_repo.query(namespace, vec, n_cands)
+        logger.info(f"Candidates: {keys}")
         if not keys:
             res[modal] = []
             continue
