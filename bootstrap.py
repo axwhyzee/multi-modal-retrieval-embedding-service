@@ -1,14 +1,16 @@
-from typing import Dict, List
-
 from dependency_injector import containers, providers
 from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPEmbedder
 from adapters.repository import PineconeRepo
 from adapters.reranker import (
-    AbstractDualModalReranker,
     BgeReranker,
     ColpaliReranker,
+)
+
+MODULES = (
+    "services.handlers",
+    "services.factory",
 )
 
 
@@ -29,4 +31,4 @@ class DIContainer(containers.DeclarativeContainer):
 
 def bootstrap() -> None:
     container = DIContainer()
-    container.wire(modules=["services.handlers", "services.factory"])
+    container.wire(modules=MODULES)
