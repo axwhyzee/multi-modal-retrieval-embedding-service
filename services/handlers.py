@@ -10,6 +10,7 @@ from adapters.embedder import AbstractEmbeddingModel
 from adapters.repository import AbstractVectorRepo
 from adapters.reranker import AbstractReranker
 from bootstrap import DIContainer
+from config import TOP_N_MULTIPLIER
 from services.factory import ModalToChunkEmbedder
 
 logger = logging.getLogger(__name__)
@@ -43,8 +44,7 @@ def handle_chunk(
 def handle_query_text(
     user: str,
     text: str,
-    n_cands: int,
-    n_rank: int,
+    top_n: int,
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
@@ -57,14 +57,14 @@ def handle_query_text(
     for modal in Modal:
         # query vector repo for candidates
         namespace = _get_vec_repo_namespace(user, modal)
-        keys = vec_repo.query(namespace, vec, n_cands)
+        keys = vec_repo.query(namespace, vec, top_n * TOP_N_MULTIPLIER)
         logger.info(f"Candidates: {keys}")
         if not keys:
             res[modal] = []
             continue
 
-        # rerank the candidates
+        # rerank candidates
         reranker = rerankers[modal]
-        ranks = reranker.rerank(text, [storage[key] for key in keys], n_rank)
+        ranks = reranker.rerank(text, [storage[key] for key in keys], top_n)
         res[modal] = [keys[i] for i in ranks]
     return res

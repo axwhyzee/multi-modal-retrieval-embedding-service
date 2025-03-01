@@ -15,7 +15,7 @@ def query_text():
     user: str = request.args["user"]
     text: str = request.args["text"]
     top_n = int(request.args["top_n"])
-    return handle_query_text(user, text, top_n * 2, top_n)
+    return handle_query_text(user, text, top_n)
 
 
 if __name__ == "__main__":
