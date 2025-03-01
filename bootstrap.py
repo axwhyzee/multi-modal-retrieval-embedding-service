@@ -33,4 +33,7 @@ class DIContainer(containers.DeclarativeContainer):
 
 def bootstrap() -> None:
     container = DIContainer()
+    # avoid lazy instantiation which times out requests
+    container.emb_model()
+    container.rerankers()
     container.wire(modules=MODULES)
