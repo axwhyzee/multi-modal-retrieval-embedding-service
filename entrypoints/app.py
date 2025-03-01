@@ -7,7 +7,8 @@ from bootstrap import bootstrap
 from services.handlers import handle_query_text
 
 logger = logging.getLogger(__name__)
-app = Flask(__name__)
+
+app: Flask
 
 
 @app.route("/query/text", methods=["GET"])
@@ -18,8 +19,15 @@ def query_text():
     return handle_query_text(user, text, top_n)
 
 
-if __name__ == "__main__":
+def create_app():
     logging.basicConfig(level=logging.INFO)
-    bootstrap()
+    app = Flask(__name__)
     CORS(app)
+    bootstrap()
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
     app.run(port=5003, debug=True)
