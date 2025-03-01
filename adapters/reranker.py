@@ -68,8 +68,8 @@ class ColpaliReranker(AbstractReranker):
     def __init__(self):
         logger.info("Initializing vidore/colpali-v1.2")
         self._model = ColPali.from_pretrained(
-            "vidore/colpali-v1.2", 
-            torch_dtype=torch.bfloat16, 
+            "vidore/colpali-v1.2",
+            torch_dtype=torch.bfloat16,
             device_map="mps",
             cache_dir=CACHE_DIR,
             local_files_only=True,
