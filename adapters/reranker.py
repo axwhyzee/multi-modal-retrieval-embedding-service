@@ -40,7 +40,6 @@ class BgeReranker(AbstractReranker):
         pairs = [
             (query, candidate.decode("utf-8")) for candidate in candidates
         ]
-        print(pairs)
         inputs = self._tokenizer(
             pairs,
             padding=True,
