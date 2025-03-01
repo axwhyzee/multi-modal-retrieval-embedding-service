@@ -2,7 +2,7 @@ import pytest
 from event_core.domain.events import ChunkStored
 from event_core.domain.types import Modal
 
-from services.handlers import _get_namespace, _user_from_key
+from services.handlers import _get_vec_repo_namespace, _user_from_key
 
 
 @pytest.mark.parametrize(
@@ -42,5 +42,5 @@ def test_namespace_from_event(
 ) -> None:
     user = _user_from_key(event.key)
     modal = event.modal
-    namespace = _get_namespace(user, modal)
+    namespace = _get_vec_repo_namespace(user, modal)
     assert namespace == expected_namespace

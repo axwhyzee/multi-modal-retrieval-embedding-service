@@ -18,7 +18,7 @@ MODULES = (
 class DIContainer(containers.DeclarativeContainer):
     vec_repo = providers.Singleton(PineconeRepo)
     emb_model = providers.Singleton(CLIPEmbedder)
-    storage_client = providers.Singleton(StorageAPIClient)
+    storage = providers.Singleton(StorageAPIClient)
 
     _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)
