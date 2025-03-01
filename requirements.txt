@@ -1,3 +1,4 @@
+accelerate==1.4.0
 annotated-types==0.7.0
 anyio==4.8.0
 blinker==1.9.0
@@ -5,13 +6,15 @@ certifi==2025.1.31
 cffi==1.17.1
 charset-normalizer==3.4.1
 click==8.1.8
+colpali_engine==0.3.8
 cryptography==44.0.1
 dependency-injector==4.45.0
-event_core @ git+https://github.com/axwhyzee/multi-modal-retrieval-event-core.git@80af3443903bb5bdedc9bf79f623879a5487df01
+event_core @ git+https://github.com/axwhyzee/multi-modal-retrieval-event-core.git
 filelock==3.17.0
 Flask==3.1.0
 Flask-Cors==5.0.0
 fsspec==2025.2.0
+GPUtil==1.4.0
 gunicorn==23.0.0
 h11==0.14.0
 httpcore==1.0.7
@@ -33,11 +36,13 @@ numpy==2.2.3
 orjson==3.10.15
 packaging==24.2
 pathspec==0.12.1
+peft==0.14.0
 pillow==11.1.0
 pinecone==6.0.1
 pinecone-plugin-interface==0.0.7
 platformdirs==4.3.6
 pluggy==1.5.0
+psutil==7.0.0
 pycparser==2.22
 pydantic==2.10.6
 pydantic_core==2.27.2
@@ -58,7 +63,7 @@ tenacity==9.0.0
 tokenizers==0.21.0
 torch==2.6.0
 tqdm==4.67.1
-transformers==4.49.0
+transformers==4.47.1
 typing_extensions==4.12.2
 urllib3==2.3.0
 Werkzeug==3.1.3
