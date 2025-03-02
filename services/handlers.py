@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, TypeAlias
+from typing import Dict, List, TypeAlias, Iterable, Iterator
 
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.storage import StorageClient
@@ -50,6 +50,11 @@ def handle_query_text(
     rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
     storage: StorageClient = Provide[DIContainer.storage],
 ) -> Dict[Modal, KeysT]:
+    
+    def _generate_objs(keys: Iterable[str]) -> Iterator[bytes]:
+        for key in keys:
+            yield storage[key]
+
     logger.info(f"Handling query text {user=} {text=}")
     res: Dict[Modal, List[str]] = {}
     vec = emb_model.embed_text(text)
@@ -65,6 +70,6 @@ def handle_query_text(
 
         # rerank candidates
         reranker = rerankers[modal]
-        ranks = reranker.rerank(text, [storage[key] for key in keys], top_n)
+        ranks = reranker.rerank(text, _generate_objs(keys), top_n)
         res[modal] = [keys[i] for i in ranks]
     return res
