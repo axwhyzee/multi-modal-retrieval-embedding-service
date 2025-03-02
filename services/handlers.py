@@ -58,7 +58,7 @@ def handle_query_text(
         # query vector repo for candidates
         namespace = _get_vec_repo_namespace(user, modal)
         keys = vec_repo.query(namespace, vec, top_n * TOP_N_MULTIPLIER)
-        logger.info(f"Candidates: {keys}")
+        logger.info(f"Found {len(keys)} candidates")
         if not keys:
             res[modal] = []
             continue
