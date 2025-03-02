@@ -11,8 +11,6 @@ from transformers import (  # type: ignore
     AutoTokenizer,
 )
 
-from config import CACHE_DIR
-
 logger = logging.getLogger(__name__)
 
 TOP_K = 5
@@ -31,12 +29,10 @@ class BgeReranker(AbstractReranker):
         logger.info("Initializing BAAI/bge-reranker-v2-m3")
         self._tokenizer = AutoTokenizer.from_pretrained(
             "BAAI/bge-reranker-v2-m3",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         )
         self._model = AutoModelForSequenceClassification.from_pretrained(
             "BAAI/bge-reranker-v2-m3",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         ).eval()
 
@@ -67,16 +63,29 @@ class BgeReranker(AbstractReranker):
 class ColpaliReranker(AbstractReranker):
     def __init__(self):
         logger.info("Initializing vidore/colpali-v1.2")
+
+        device = (
+            torch.device("cuda")
+            if torch.cuda.is_available()
+            else (
+                torch.device("mps")
+                if torch.backends.mps.is_available()
+                else (
+                    torch.device("xpu")
+                    if torch.xpu.is_available()
+                    else torch.device("cpu")
+                )
+            )
+        )
+
         self._model = ColPali.from_pretrained(
             "vidore/colpali-v1.2",
             torch_dtype=torch.bfloat16,
-            device_map="mps",
-            cache_dir=CACHE_DIR,
+            device_map=device,
             local_files_only=True,
         ).eval()
         self._processor = ColPaliProcessor.from_pretrained(
             "vidore/colpali-v1.2",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         )
 
@@ -100,3 +109,10 @@ class ColpaliReranker(AbstractReranker):
         ).reshape(-1)
         idx_scores = zip(scores, range(len(scores)))
         return [i for _, i in sorted(idx_scores, reverse=True)[:top_k]]
+
+
+class FakeReranker(AbstractReranker):
+    def rerank(
+        self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
+    ) -> Iterable[int]:
+        return candidates[:top_k]

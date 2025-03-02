@@ -12,8 +12,6 @@ from transformers import (  # type: ignore
     CLIPVisionModelWithProjection,
 )
 
-from config import CACHE_DIR
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,17 +34,14 @@ class CLIPEmbedder(AbstractEmbeddingModel):
         logger.info("Initializing openai/clip-vit-base-patch32")
         self._text_model = CLIPTextModelWithProjection.from_pretrained(
             "openai/clip-vit-base-patch32",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         )
         self._vision_model = CLIPVisionModelWithProjection.from_pretrained(
             "openai/clip-vit-base-patch32",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         )
         self._processor = CLIPProcessor.from_pretrained(
             "openai/clip-vit-base-patch32",
-            cache_dir=CACHE_DIR,
             local_files_only=True,
         )
 
