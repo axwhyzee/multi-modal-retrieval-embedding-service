@@ -1,6 +1,6 @@
 import pytest
 from event_core.domain.events import ChunkStored
-from event_core.domain.types import EXT_TO_MODAL, Modal, path_to_ext
+from event_core.domain.types import EXT_TO_MODAL, path_to_ext
 
 from services.handlers import _get_vec_repo_namespace, _user_from_key
 
