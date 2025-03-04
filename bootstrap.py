@@ -4,7 +4,7 @@ from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPEmbedder
 from adapters.repository import PineconeRepo
-from adapters.reranker import BgeReranker, ColpaliReranker, FakeReranker
+from adapters.reranker import BgeReranker, ColpaliReranker
 
 MODULES = (
     "services.handlers",
