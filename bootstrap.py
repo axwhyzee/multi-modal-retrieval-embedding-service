@@ -4,10 +4,7 @@ from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPEmbedder
 from adapters.repository import PineconeRepo
-from adapters.reranker import (
-    BgeReranker,
-    ColpaliReranker,
-)
+from adapters.reranker import BgeReranker, ColpaliReranker, FakeReranker
 
 MODULES = (
     "services.handlers",
@@ -20,12 +17,13 @@ class DIContainer(containers.DeclarativeContainer):
     emb_model = providers.Singleton(CLIPEmbedder)
     storage = providers.Singleton(StorageAPIClient)
 
-    _copali_reranker = providers.Singleton(ColpaliReranker)
+    # _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)
+    _fake_reranker = providers.Singleton(FakeReranker)
     rerankers = providers.Dict(
         {
-            Modal.IMAGE: _copali_reranker,
-            Modal.VIDEO: _copali_reranker,
+            Modal.IMAGE: _fake_reranker,
+            Modal.VIDEO: _fake_reranker,
             Modal.TEXT: _bge_reranker,
         }
     )

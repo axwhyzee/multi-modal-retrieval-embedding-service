@@ -14,7 +14,7 @@ class AbstractEmbedderFactory(ABC):
     @inject
     def embed(
         cls,
-        obj: bytes,
+        data: bytes,
         emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     ) -> List[float]:
         raise NotImplementedError
@@ -25,10 +25,10 @@ class TextIndexer(AbstractEmbedderFactory):
     @inject
     def embed(
         cls,
-        obj: bytes,
+        data: bytes,
         emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     ) -> List[float]:
-        return emb_model.embed_text(obj.decode("utf-8"))
+        return emb_model.embed_text(data.decode("utf-8"))
 
 
 class ImageEmbedder(AbstractEmbedderFactory):
@@ -36,10 +36,10 @@ class ImageEmbedder(AbstractEmbedderFactory):
     @inject
     def embed(
         cls,
-        obj: bytes,
+        data: bytes,
         emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     ) -> List[float]:
-        return emb_model.embed_image(obj)
+        return emb_model.embed_image(data)
 
 
 ModalToChunkEmbedder: Dict[Modal, Type[AbstractEmbedderFactory]] = {

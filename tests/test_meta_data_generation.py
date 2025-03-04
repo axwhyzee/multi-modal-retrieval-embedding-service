@@ -1,6 +1,6 @@
 import pytest
 from event_core.domain.events import ChunkStored
-from event_core.domain.types import Modal
+from event_core.domain.types import PRIMITIVE_EXT_TO_MODAL, Modal, path_to_ext
 
 from services.handlers import _get_vec_repo_namespace, _user_from_key
 
@@ -24,15 +24,15 @@ def test_user_from_key(key: str, expected_user: str) -> None:
     "event,expected_namespace",
     (
         (
-            ChunkStored(key="user1/test.txt", modal=Modal.TEXT),
+            ChunkStored(key="user1/test.txt"),
             "user1__TEXT",
         ),
         (
-            ChunkStored(key="user2/test.png", modal=Modal.VIDEO),
-            "user2__VIDEO",
+            ChunkStored(key="user2/test.png"),
+            "user2__IMAGE",
         ),
         (
-            ChunkStored(key="user3/test.png", modal=Modal.IMAGE),
+            ChunkStored(key="user3/test.png"),
             "user3__IMAGE",
         ),
     ),
@@ -41,6 +41,7 @@ def test_namespace_from_event(
     event: ChunkStored, expected_namespace: str
 ) -> None:
     user = _user_from_key(event.key)
-    modal = event.modal
+    ext = path_to_ext(event.key)
+    modal = PRIMITIVE_EXT_TO_MODAL[ext]
     namespace = _get_vec_repo_namespace(user, modal)
     assert namespace == expected_namespace

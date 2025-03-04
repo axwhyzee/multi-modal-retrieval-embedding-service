@@ -4,7 +4,6 @@ from typing import Dict, List
 import pytest
 
 from adapters.repository import AbstractVectorRepo
-from bootstrap import bootstrap
 
 VectorT = List[float]
 
@@ -33,6 +32,3 @@ def test_img_data() -> bytes:
 @pytest.fixture
 def test_txt_data() -> bytes:
     return (TEST_DIR / "test.txt").read_bytes()
-
-
-bootstrap()

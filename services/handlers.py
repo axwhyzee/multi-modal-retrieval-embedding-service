@@ -1,10 +1,10 @@
 import logging
-from typing import Dict, List, TypeAlias, Iterable, Iterator
+from typing import Dict, Iterable, Iterator, List, TypeAlias
 
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.storage import StorageClient
 from event_core.domain.events import ChunkStored
-from event_core.domain.types import Modal
+from event_core.domain.types import PRIMITIVE_EXT_TO_MODAL, Modal, path_to_ext
 
 from adapters.embedder import AbstractEmbeddingModel
 from adapters.repository import AbstractVectorRepo
@@ -34,9 +34,11 @@ def handle_chunk(
 ) -> None:
     logger.info(f"Handling chunk {event=}")
     user = _user_from_key(event.key)
-    embedder = ModalToChunkEmbedder[event.modal]
+    ext = path_to_ext(event.key)
+    modal = PRIMITIVE_EXT_TO_MODAL[ext]
+    embedder = ModalToChunkEmbedder[modal]
     vec = embedder.embed(storage[event.key])
-    namespace = _get_vec_repo_namespace(user, event.modal)
+    namespace = _get_vec_repo_namespace(user, modal)
     vec_repo.insert(namespace, event.key, vec)
 
 
@@ -50,7 +52,7 @@ def handle_query_text(
     rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
     storage: StorageClient = Provide[DIContainer.storage],
 ) -> Dict[Modal, KeysT]:
-    
+
     def _generate_objs(keys: Iterable[str]) -> Iterator[bytes]:
         for key in keys:
             yield storage[key]

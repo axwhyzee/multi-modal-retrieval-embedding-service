@@ -115,4 +115,4 @@ class FakeReranker(AbstractReranker):
     def rerank(
         self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
-        return candidates[:top_k]
+        return range(top_k)
