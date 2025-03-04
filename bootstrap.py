@@ -17,13 +17,11 @@ class DIContainer(containers.DeclarativeContainer):
     emb_model = providers.Singleton(CLIPEmbedder)
     storage = providers.Singleton(StorageAPIClient)
 
-    # _copali_reranker = providers.Singleton(ColpaliReranker)
+    _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)
-    _fake_reranker = providers.Singleton(FakeReranker)
     rerankers = providers.Dict(
         {
-            Modal.IMAGE: _fake_reranker,
-            Modal.VIDEO: _fake_reranker,
+            Modal.IMAGE: _copali_reranker,
             Modal.TEXT: _bge_reranker,
         }
     )

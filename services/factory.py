@@ -45,5 +45,4 @@ class ImageEmbedder(AbstractEmbedderFactory):
 ModalToChunkEmbedder: Dict[Modal, Type[AbstractEmbedderFactory]] = {
     Modal.TEXT: TextIndexer,
     Modal.IMAGE: ImageEmbedder,
-    Modal.VIDEO: ImageEmbedder,
 }
