@@ -1,6 +1,6 @@
 import pytest
 from event_core.domain.events import ChunkStored
-from event_core.domain.types import PRIMITIVE_EXT_TO_MODAL, Modal, path_to_ext
+from event_core.domain.types import EXT_TO_MODAL, Modal, path_to_ext
 
 from bootstrap import bootstrap
 from config import EMBEDDING_DIM
@@ -30,7 +30,7 @@ def test_embedder_generates_vector_with_correct_dim(
     bootstrap()
     data = request.getfixturevalue(fixture_data)
     ext = path_to_ext(event.key)
-    modal = PRIMITIVE_EXT_TO_MODAL[ext]
+    modal = EXT_TO_MODAL[ext]
     embedder = ModalToChunkEmbedder[modal]
     vec = embedder.embed(data)
 

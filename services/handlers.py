@@ -4,7 +4,7 @@ from typing import Dict, Iterable, Iterator, List, TypeAlias
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.storage import StorageClient
 from event_core.domain.events import ChunkStored
-from event_core.domain.types import PRIMITIVE_EXT_TO_MODAL, Modal, path_to_ext
+from event_core.domain.types import EXT_TO_MODAL, Modal, path_to_ext
 
 from adapters.embedder import AbstractEmbeddingModel
 from adapters.repository import AbstractVectorRepo
@@ -35,7 +35,7 @@ def handle_chunk(
     logger.info(f"Handling chunk {event=}")
     user = _user_from_key(event.key)
     ext = path_to_ext(event.key)
-    modal = PRIMITIVE_EXT_TO_MODAL[ext]
+    modal = EXT_TO_MODAL[ext]
     embedder = ModalToChunkEmbedder[modal]
     vec = embedder.embed(storage[event.key])
     namespace = _get_vec_repo_namespace(user, modal)
