@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    logger.info("Listening to event broker")
     with RedisConsumer() as consumer:
         consumer.subscribe(ChunkStored)
         consumer.listen(handle_chunk)
