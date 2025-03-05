@@ -51,14 +51,14 @@ def handle_query_text(
     emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
     rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
     storage: StorageClient = Provide[DIContainer.storage],
-) -> Dict[Modal, KeysT]:
+) -> KeysT:
 
     def _generate_objs(keys: Iterable[str]) -> Iterator[bytes]:
         for key in keys:
             yield storage[key]
 
     logger.info(f"Handling query text {user=} {text=}")
-    res: Dict[Modal, List[str]] = {}
+    res: KeysT = []
     vec = emb_model.embed_text(text)
 
     for modal in Modal:
@@ -67,11 +67,11 @@ def handle_query_text(
         keys = vec_repo.query(namespace, vec, top_n * TOP_N_MULTIPLIER)
         logger.info(f"Found {len(keys)} candidates")
         if len(keys) < top_n:
-            res[modal] = keys
+            res.extend(keys)
             continue
 
         # rerank candidates
         reranker = rerankers[modal]
         ranks = reranker.rerank(text, _generate_objs(keys), top_n)
-        res[modal] = [keys[i] for i in ranks]
+        res.extend([keys[i] for i in ranks])
     return res
