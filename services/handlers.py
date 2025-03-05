@@ -32,14 +32,20 @@ def handle_chunk(
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     storage: StorageClient = Provide[DIContainer.storage],
 ) -> None:
+    """
+    1. Fetch chunk object
+    2. Embed chunk
+    3. Insert into vec repo at the corresponding namespace
+    """
     logger.info(f"Handling chunk {event=}")
-    user = _user_from_key(event.key)
-    ext = path_to_ext(event.key)
+    key = event.key
+    user = _user_from_key(key)
+    ext = path_to_ext(key)
     modal = EXT_TO_MODAL[ext]
     embedder = ModalToChunkEmbedder[modal]
-    vec = embedder.embed(storage[event.key])
+    vec = embedder.embed(storage[key])
     namespace = _get_vec_repo_namespace(user, modal)
-    vec_repo.insert(namespace, event.key, vec)
+    vec_repo.insert(namespace, key, vec)
 
 
 @inject
@@ -52,7 +58,13 @@ def handle_query_text(
     rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
     storage: StorageClient = Provide[DIContainer.storage],
 ) -> KeysT:
-
+    """
+    1. For each chunk modal, embed text and query vec repo for 
+       the most relevant candidates (>= top_n candidates)
+    2. Rerank candidates against query text using the reranker
+       specific to the modal
+    3. Return top_n chunks
+    """
     def _generate_objs(keys: Iterable[str]) -> Iterator[bytes]:
         for key in keys:
             yield storage[key]
@@ -66,6 +78,7 @@ def handle_query_text(
         namespace = _get_vec_repo_namespace(user, modal)
         keys = vec_repo.query(namespace, vec, top_n * TOP_N_MULTIPLIER)
         logger.info(f"Found {len(keys)} candidates")
+
         if len(keys) < top_n:
             res.extend(keys)
             continue
