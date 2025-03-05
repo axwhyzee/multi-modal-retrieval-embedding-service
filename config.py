@@ -10,7 +10,7 @@ EMBEDDING_DIM = 512
 
 INDEX_NAME = "multi-modal-vectors"
 
-TOP_N_MULTIPLIER = 10  # fetch top 10n cands, rerank and output top n ranked
+TOP_N_MULTIPLIER = 5  # fetch top 5n cands, rerank and output top n ranked
 
 
 def get_pinecone_api_key() -> str:
