@@ -13,6 +13,16 @@ from transformers import (  # type: ignore
 
 logger = logging.getLogger(__name__)
 
+if torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    DEVICE = torch.device("mps")
+elif torch.xpu.is_available():
+    DEVICE = torch.device("xpu")
+else:
+    DEVICE = torch.device("cpu")
+
+
 TOP_K = 5
 
 
@@ -63,25 +73,10 @@ class BgeReranker(AbstractReranker):
 class ColpaliReranker(AbstractReranker):
     def __init__(self):
         logger.info("Initializing vidore/colpali-v1.2")
-
-        device = (
-            torch.device("cuda")
-            if torch.cuda.is_available()
-            else (
-                torch.device("mps")
-                if torch.backends.mps.is_available()
-                else (
-                    torch.device("xpu")
-                    if torch.xpu.is_available()
-                    else torch.device("cpu")
-                )
-            )
-        )
-
         self._model = ColPali.from_pretrained(
             "vidore/colpali-v1.2",
             torch_dtype=torch.bfloat16,
-            device_map=device,
+            device_map=DEVICE,
             local_files_only=True,
         ).eval()
         self._processor = ColPaliProcessor.from_pretrained(
@@ -92,21 +87,39 @@ class ColpaliReranker(AbstractReranker):
     def rerank(
         self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
-        images = [Image.open(BytesIO(cand)) for cand in candidates]
-        batch_images = self._processor.process_images(images).to(
-            self._model.device
-        )
-        batch_queries = self._processor.process_queries([query]).to(
-            self._model.device
-        )
+        BATCH_SIZE = 8
 
+        scores = []
+        text_input = self._processor.process_queries([query]).to(DEVICE)
         with torch.no_grad():
-            image_embeddings = self._model(**batch_images)
-            query_embeddings = self._model(**batch_queries)
+            text_emb = self._model(**text_input)
 
-        scores = self._processor.score_multi_vector(
-            query_embeddings, image_embeddings
-        ).reshape(-1)
+        done = False
+        while not done:
+            batch_imgs = []
+
+            for _ in range(BATCH_SIZE):
+                try:
+                    img = Image.open(BytesIO(next(candidates)))
+                    batch_imgs.append(img)
+                except StopIteration:
+                    done = True
+                    break
+
+            if not batch_imgs:
+                break
+
+            batch_img_inputs = self._processor.process_images(batch_imgs).to(
+                DEVICE
+            )
+            with torch.no_grad():
+                img_embs = self._model(**batch_img_inputs)
+
+            batch_scores = self._processor.score_multi_vector(
+                text_emb, img_embs
+            ).reshape(-1)
+            scores.extend(batch_scores)
+        logger.info(scores)
         idx_scores = zip(scores, range(len(scores)))
         return [i for _, i in sorted(idx_scores, reverse=True)[:top_k]]
 
