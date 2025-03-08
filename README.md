@@ -1,3 +1,6 @@
+# Multi-Modal Retrieval Embedding Service
+Embedding Service indexes uploaded objects into their respective `{USER}/{MODAL}` namespace, and yields objects most relevant to a provided text query.
+
 ## Setup
 Setup Python env
 ```
@@ -15,5 +18,9 @@ huggingface-cli download vidore/colpali-v1.2
 
 ## Run
 ```
-python app.py
+# app is required only by frontend to make queries
+PYTHONPATH=. python entrypoints/app.py
+
+# event consumer should be started when expecting doc uploads
+PYTHONPATH=. python entrypoints/event_consumer.py
 ```
