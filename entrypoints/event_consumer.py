@@ -1,10 +1,10 @@
 import logging
 
 from event_core.adapters.pubsub import RedisConsumer
-from event_core.domain.events import ChunkStored
+from event_core.domain.events import ElementStored
 
 from bootstrap import bootstrap
-from services.handlers import handle_chunk
+from services.handlers import handle_element
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info("Listening to event broker")
     with RedisConsumer() as consumer:
-        consumer.subscribe(ChunkStored)
-        consumer.listen(handle_chunk)
+        consumer.subscribe(ElementStored)
+        consumer.listen(handle_element)
 
 
 if __name__ == "__main__":

@@ -32,3 +32,8 @@ def test_img_data() -> bytes:
 @pytest.fixture
 def test_txt_data() -> bytes:
     return (TEST_DIR / "test.txt").read_bytes()
+
+
+@pytest.fixture
+def test_table_data() -> bytes:
+    return (TEST_DIR / "table.png").read_bytes()

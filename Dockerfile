@@ -8,6 +8,8 @@ RUN pip install -r requirements.txt
 
 RUN huggingface-cli download openai/clip-vit-base-patch32
 
+RUN huggingface-cli download google/deplot
+
 RUN huggingface-cli download BAAI/bge-reranker-v2-m3
 
 RUN huggingface-cli download vidore/colpali-v1.2

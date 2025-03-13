@@ -2,9 +2,9 @@ from dependency_injector import containers, providers
 from event_core.adapters.services.storage import StorageAPIClient
 from event_core.domain.types import Modal
 
-from adapters.embedder import CLIPEmbedder
+from adapters.embedder import CLIPTextModel, CLIPVisionModel, DePlotModel
 from adapters.repository import PineconeRepo
-from adapters.reranker import BgeReranker, ColpaliReranker
+from adapters.reranker import BgeReranker, ColpaliReranker, FakeReranker
 
 MODULES = (
     "services.handlers",
@@ -14,14 +14,17 @@ MODULES = (
 
 class DIContainer(containers.DeclarativeContainer):
     vec_repo = providers.Singleton(PineconeRepo)
-    emb_model = providers.Singleton(CLIPEmbedder)
+    text_model = providers.Singleton(CLIPTextModel)
+    vision_model = providers.Singleton(CLIPVisionModel)
+    plot_model = providers.Singleton(DePlotModel, text_model)
     storage = providers.Singleton(StorageAPIClient)
 
-    _copali_reranker = providers.Singleton(ColpaliReranker)
+    # _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)
+    _fake_reranker = providers.Singleton(FakeReranker)
     rerankers = providers.Dict(
         {
-            Modal.IMAGE: _copali_reranker,
+            Modal.IMAGE: _fake_reranker,
             Modal.TEXT: _bge_reranker,
         }
     )
@@ -30,6 +33,8 @@ class DIContainer(containers.DeclarativeContainer):
 def bootstrap() -> None:
     container = DIContainer()
     # avoid lazy instantiation which times out requests
-    container.emb_model()
+    container.text_model()
+    container.vision_model()
+    container.plot_model()
     container.rerankers()
     container.wire(modules=MODULES)

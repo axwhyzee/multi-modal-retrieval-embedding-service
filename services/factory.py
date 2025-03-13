@@ -1,48 +1,29 @@
-from abc import ABC, abstractmethod
-from typing import Dict, List, Type
-
 from dependency_injector.wiring import Provide, inject
-from event_core.domain.types import Modal
+from event_core.domain.events import (
+    ElementStored,
+    ImageElementStored,
+    PlotElementStored,
+    TextElementStored,
+)
 
 from adapters.embedder import AbstractEmbeddingModel
 from bootstrap import DIContainer
 
 
-class AbstractEmbedderFactory(ABC):
-    @classmethod
-    @abstractmethod
-    @inject
-    def embed(
-        cls,
-        data: bytes,
-        emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
-    ) -> List[float]:
-        raise NotImplementedError
+class UnavailableModel(Exception): ...
 
 
-class TextIndexer(AbstractEmbedderFactory):
-    @classmethod
-    @inject
-    def embed(
-        cls,
-        data: bytes,
-        emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
-    ) -> List[float]:
-        return emb_model.embed_text(data.decode("utf-8"))
-
-
-class ImageEmbedder(AbstractEmbedderFactory):
-    @classmethod
-    @inject
-    def embed(
-        cls,
-        data: bytes,
-        emb_model: AbstractEmbeddingModel = Provide[DIContainer.emb_model],
-    ) -> List[float]:
-        return emb_model.embed_image(data)
-
-
-ModalToChunkEmbedder: Dict[Modal, Type[AbstractEmbedderFactory]] = {
-    Modal.TEXT: TextIndexer,
-    Modal.IMAGE: ImageEmbedder,
-}
+@inject
+def model_factory(
+    event: ElementStored,
+    vision_model=Provide[DIContainer.vision_model],
+    text_model=Provide[DIContainer.text_model],
+    plot_model=Provide[DIContainer.plot_model],
+) -> AbstractEmbeddingModel:
+    if isinstance(event, ImageElementStored):
+        return vision_model
+    elif isinstance(event, TextElementStored):
+        return text_model
+    elif isinstance(event, PlotElementStored):
+        return plot_model
+    raise UnavailableModel(f"No available model for event {event}")

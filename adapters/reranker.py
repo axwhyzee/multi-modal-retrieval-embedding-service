@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import Iterable
+from typing import Iterable, Iterator
 
 import torch
 from colpali_engine.models import ColPali, ColPaliProcessor  # type: ignore
@@ -29,7 +29,7 @@ TOP_K = 5
 class AbstractReranker(ABC):
     @abstractmethod
     def rerank(
-        self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
+        self, query: str, candidates: Iterator[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
         raise NotImplementedError
 
@@ -47,7 +47,7 @@ class BgeReranker(AbstractReranker):
         ).eval()
 
     def rerank(
-        self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
+        self, query: str, candidates: Iterator[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
         pairs = [
             (query, candidate.decode("utf-8")) for candidate in candidates
@@ -85,7 +85,7 @@ class ColpaliReranker(AbstractReranker):
         )
 
     def rerank(
-        self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
+        self, query: str, candidates: Iterator[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
         BATCH_SIZE = 8
 
@@ -126,6 +126,6 @@ class ColpaliReranker(AbstractReranker):
 
 class FakeReranker(AbstractReranker):
     def rerank(
-        self, query: str, candidates: Iterable[bytes], top_k: int = TOP_K
+        self, query: str, candidates: Iterator[bytes], top_k: int = TOP_K
     ) -> Iterable[int]:
         return range(top_k)
