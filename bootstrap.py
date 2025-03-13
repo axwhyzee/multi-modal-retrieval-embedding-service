@@ -4,7 +4,7 @@ from event_core.domain.types import Modal
 
 from adapters.embedder import CLIPTextModel, CLIPVisionModel, DePlotModel
 from adapters.repository import PineconeRepo
-from adapters.reranker import BgeReranker, ColpaliReranker, FakeReranker
+from adapters.reranker import BgeReranker, ColpaliReranker
 
 MODULES = (
     "services.handlers",
@@ -19,12 +19,11 @@ class DIContainer(containers.DeclarativeContainer):
     plot_model = providers.Singleton(DePlotModel, text_model)
     storage = providers.Singleton(StorageAPIClient)
 
-    # _copali_reranker = providers.Singleton(ColpaliReranker)
+    _copali_reranker = providers.Singleton(ColpaliReranker)
     _bge_reranker = providers.Singleton(BgeReranker)
-    _fake_reranker = providers.Singleton(FakeReranker)
     rerankers = providers.Dict(
         {
-            Modal.IMAGE: _fake_reranker,
+            Modal.IMAGE: _copali_reranker,
             Modal.TEXT: _bge_reranker,
         }
     )
