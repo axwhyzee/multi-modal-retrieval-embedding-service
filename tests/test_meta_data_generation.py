@@ -1,5 +1,10 @@
 import pytest
-from event_core.domain.events import ChunkStored
+from event_core.domain.events import (
+    ElementStored,
+    ImageElementStored,
+    PlotElementStored,
+    TextElementStored,
+)
 from event_core.domain.types import EXT_TO_MODAL, path_to_ext
 
 from services.handlers import _get_vec_repo_namespace, _user_from_key
@@ -24,21 +29,21 @@ def test_user_from_key(key: str, expected_user: str) -> None:
     "event,expected_namespace",
     (
         (
-            ChunkStored(key="user1/test.txt"),
+            TextElementStored(key="user1/test.txt"),
             "user1__TEXT",
         ),
         (
-            ChunkStored(key="user2/test.png"),
+            ImageElementStored(key="user2/test.png"),
             "user2__IMAGE",
         ),
         (
-            ChunkStored(key="user3/test.png"),
+            PlotElementStored(key="user3/table.png"),
             "user3__IMAGE",
         ),
     ),
 )
 def test_namespace_from_event(
-    event: ChunkStored, expected_namespace: str
+    event: ElementStored, expected_namespace: str
 ) -> None:
     user = _user_from_key(event.key)
     ext = path_to_ext(event.key)

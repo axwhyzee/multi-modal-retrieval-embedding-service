@@ -1,38 +1,38 @@
 import pytest
-from event_core.domain.events import ChunkStored
-from event_core.domain.types import EXT_TO_MODAL, Modal, path_to_ext
+from event_core.domain.events import (
+    ElementStored,
+    ImageElementStored,
+    PlotElementStored,
+    TextElementStored,
+)
+from event_core.domain.types import path_to_ext
 
 from bootstrap import bootstrap
 from config import EMBEDDING_DIM
-from services.factory import ModalToChunkEmbedder
+from services.factory import model_factory
 
 
 @pytest.mark.parametrize(
     "event,fixture_data",
     (
         (
-            ChunkStored(key="user1/test.txt"),
+            TextElementStored(key="user1/text.txt"),
             "test_txt_data",
         ),
         (
-            ChunkStored(key="user2/test.png"),
+            ImageElementStored(key="user2/img.png"),
             "test_img_data",
         ),
-        (
-            ChunkStored(key="user3/test.png"),
-            "test_img_data",
-        ),
+        (PlotElementStored(key="user3/table.png"), "test_table_data"),
     ),
 )
 def test_embedder_generates_vector_with_correct_dim(
-    event: ChunkStored, fixture_data: str, request: pytest.FixtureRequest
+    event: ElementStored, fixture_data: str, request: pytest.FixtureRequest
 ) -> None:
     bootstrap()
     data = request.getfixturevalue(fixture_data)
-    ext = path_to_ext(event.key)
-    modal = EXT_TO_MODAL[ext]
-    embedder = ModalToChunkEmbedder[modal]
-    vec = embedder.embed(data)
+    model = model_factory(event)
+    vec = model.embed(data)
 
     assert type(vec) == list
     assert type(vec[0]) == float

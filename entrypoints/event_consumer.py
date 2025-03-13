@@ -1,7 +1,11 @@
 import logging
 
 from event_core.adapters.pubsub import RedisConsumer
-from event_core.domain.events import ElementStored
+from event_core.domain.events import (
+    ImageElementStored,
+    PlotElementStored,
+    TextElementStored,
+)
 
 from bootstrap import bootstrap
 from services.handlers import handle_element
@@ -12,7 +16,9 @@ logger = logging.getLogger(__name__)
 def main():
     logger.info("Listening to event broker")
     with RedisConsumer() as consumer:
-        consumer.subscribe(ElementStored)
+        consumer.subscribe(ImageElementStored)
+        consumer.subscribe(TextElementStored)
+        consumer.subscribe(PlotElementStored)
         consumer.listen(handle_element)
 
 
