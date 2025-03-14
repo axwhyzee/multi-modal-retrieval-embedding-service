@@ -13,7 +13,7 @@ def create_app():
     logging.basicConfig(level=logging.INFO)
     app = Flask(__name__)
     CORS(app)
-    bootstrap()
+    bootstrap(lazy_load=False)
     return app
 
 

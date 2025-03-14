@@ -29,11 +29,13 @@ class DIContainer(containers.DeclarativeContainer):
     )
 
 
-def bootstrap() -> None:
+def bootstrap(lazy_load: bool = True) -> None:
     container = DIContainer()
-    # avoid lazy instantiation which times out requests
-    container.text_model()
-    container.vision_model()
-    container.plot_model()
-    container.rerankers()
+
+    if not lazy_load:
+        # avoid lazy instantiation which times out requests
+        container.text_model()
+        container.vision_model()
+        container.plot_model()
+        container.rerankers()
     container.wire(modules=MODULES)
