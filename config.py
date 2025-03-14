@@ -1,5 +1,3 @@
-import os
-
 from dotenv import find_dotenv, load_dotenv
 from event_core.config import get_env_var
 
