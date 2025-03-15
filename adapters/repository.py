@@ -4,6 +4,7 @@ from typing import Dict, Iterable, List
 
 from pinecone import Pinecone, ServerlessSpec  # type: ignore
 from pinecone.data.index import Index  # type: ignore
+from pinecone.openapi_support.exceptions import PineconeApiException
 
 from config import get_pinecone_api_key
 
@@ -42,12 +43,16 @@ class PineconeRepo(AbstractVectorRepo):
     def _get_or_create_index(self, index_name: str, index_dim: int) -> Index:
         if not self._pc.has_index(index_name):
             logger.info(f"Creating index {index_name}")
-            self._pc.create_index(
-                name=index_name,
-                dimension=index_dim,
-                metric="cosine",
-                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-            )
+            try:
+                self._pc.create_index(
+                    name=index_name,
+                    dimension=index_dim,
+                    metric="cosine",
+                    spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+                )
+            except PineconeApiException:
+                # parallel process has created index
+                pass
         return self._pc.Index(index_name)
 
     def insert(
