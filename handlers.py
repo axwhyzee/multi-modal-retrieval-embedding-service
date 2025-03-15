@@ -43,8 +43,9 @@ def handle_element(
     """
     logger.info(f"Handling ElementStored: {event=}")
     key = event.key
-    model = model_factory[event.__class__]
-    event_elem = ELEM_TYPES[event.__class__]
+    event_cls = event.__class__
+    event_elem = ELEM_TYPES[event_cls]
+    model = model_factory[event_cls]
     vec_repo.insert(
         index_name=_get_vec_repo_idx_name(event_elem),
         namespace=_user_from_key(key),
