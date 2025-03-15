@@ -5,10 +5,8 @@ from event_core.domain.events.elements import (
     ImageElementStored,
     PlotElementStored,
     TextElementStored,
-    ElementStored
 )
 from event_core.domain.types import Element
-from typing import Tuple, Type
 
 from adapters.embedders import (
     CLIPTextModel,
@@ -46,7 +44,7 @@ class DIContainer(containers.DeclarativeContainer):
     _bge_reranker = providers.Singleton(BgeReranker)
     reranker_factory = providers.Dict(
         {
-            # Element.IMAGE: _copali_reranker,
+            Element.IMAGE: _copali_reranker,
             Element.TEXT: _bge_reranker,
         }
     )
