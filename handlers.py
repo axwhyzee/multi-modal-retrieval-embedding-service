@@ -46,11 +46,17 @@ def handle_element(
     event_cls = event.__class__
     event_elem = ELEM_TYPES[event_cls]
     model = model_factory[event_cls]
+
+    try:
+        vec = model.embed(storage[key])
+    except:
+        return
+
     vec_repo.insert(
         index_name=_get_vec_repo_idx_name(event_elem),
         namespace=_user_from_key(key),
         key=key,
-        vec=model.embed(storage[key]),
+        vec=vec,
     )
 
 
@@ -61,7 +67,9 @@ def handle_query_text(
     top_n: int,
     storage: StorageClient = Provide[DIContainer.storage],
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
-    text_model: AbstractEmbeddingModel = Provide[DIContainer.text_model],
+    query_model_factory: Dict[Element, AbstractEmbeddingModel] = Provide[
+        DIContainer.query_model_factory
+    ],
     reranker_factory: Dict[Element, AbstractReranker] = Provide[
         DIContainer.reranker_factory
     ],
@@ -81,10 +89,11 @@ def handle_query_text(
 
     logger.info(f"Handling query text {user=} {text=}")
     res: KeysT = []
-    query_vec = text_model.embed(text.encode("utf-8"))
+    enc_text = text.encode("utf-8")
 
-    for elem in Element:
+    for elem, text_model in query_model_factory.items():
         # query vector repo for candidates
+        query_vec = text_model.embed(enc_text)
         keys = vec_repo.query(
             index_name=_get_vec_repo_idx_name(elem),
             namespace=user,
@@ -98,7 +107,7 @@ def handle_query_text(
             continue
 
         # rerank candidates
-        if reranker := reranker_factory[elem]:
+        if reranker := reranker_factory.get(elem):
             ranks = reranker.rerank(text, _generate_objs(keys), top_n)
             res.extend([keys[i] for i in ranks])
         else:

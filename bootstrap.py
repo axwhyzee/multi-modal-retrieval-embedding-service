@@ -23,16 +23,24 @@ MODULES = ("handlers",)
 class DIContainer(containers.DeclarativeContainer):
 
     # embedding models
-    text_model = providers.Singleton(CLIPTextModel)
+    _text_model = providers.Singleton(CLIPTextModel)
     _vision_model = providers.Singleton(CLIPVisionModel)
-    _plot_model = providers.Singleton(DePlotModel, text_model)
-    _code_model = providers.Singleton[UniXCoderModel]
+    _plot_model = providers.Singleton(DePlotModel, _text_model)
+    _code_model = providers.Singleton(UniXCoderModel)
     model_factory = providers.Dict(
         {
             CodeElementStored: _code_model,
             ImageElementStored: _vision_model,
-            TextElementStored: text_model,
+            TextElementStored: _text_model,
             PlotElementStored: _plot_model,
+        }
+    )
+    query_model_factory = providers.Dict(
+        {
+            Element.IMAGE: _text_model,
+            Element.TEXT: _text_model,
+            Element.PLOT: _text_model,
+            Element.CODE: _code_model,
         }
     )
 
@@ -72,4 +80,5 @@ def bootstrap(lazy_load: bool = True) -> None:
         # avoid lazy instantiation which times out requests
         container.reranker_factory()
         container.model_factory()
+        container.query_model_factory()
     container.wire(modules=MODULES)
