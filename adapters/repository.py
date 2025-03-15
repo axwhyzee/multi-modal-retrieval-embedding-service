@@ -4,7 +4,7 @@ from typing import Dict, Iterable, List
 
 from pinecone import Pinecone, ServerlessSpec  # type: ignore
 from pinecone.data.index import Index  # type: ignore
-from pinecone.openapi_support.exceptions import PineconeApiException
+from pinecone.openapi_support.exceptions import PineconeApiException  # type: ignore
 
 from config import get_pinecone_api_key
 
