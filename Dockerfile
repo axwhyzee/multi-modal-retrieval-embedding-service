@@ -12,6 +12,8 @@ RUN huggingface-cli download google/deplot
 
 RUN huggingface-cli download BAAI/bge-reranker-v2-m3
 
+RUN huggingface-cli download microsoft/unixcoder-base
+
 # RUN huggingface-cli download vidore/colpali-v1.2
 
 # RUN huggingface-cli download vidore/colpaligemma-3b-pt-448-base

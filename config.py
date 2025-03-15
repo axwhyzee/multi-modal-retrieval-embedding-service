@@ -5,10 +5,6 @@ from event_core.config import get_env_var
 load_dotenv(find_dotenv())
 
 
-EMBEDDING_DIM = 512
-
-INDEX_NAME = "multi-modal-vectors"
-
 TOP_N_MULTIPLIER = 3  # fetch top 3n cands, rerank and output top n ranked
 
 

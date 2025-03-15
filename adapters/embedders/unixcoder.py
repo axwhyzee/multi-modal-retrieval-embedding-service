@@ -3,11 +3,13 @@ from typing import List
 import torch
 
 from adapters.embedders._unixcoder import UniXcoder
-from adapters.embedders.base import AbstractEmbeddingModel
+from adapters.embedders.base import CodeModel
 from config import DEVICE
 
 
-class UniXCoderModel(AbstractEmbeddingModel):
+class UniXCoderModel(CodeModel):
+
+    EMBEDDING_DIM = 768
 
     def __init__(self):
         self._model = UniXcoder("microsoft/unixcoder-base")

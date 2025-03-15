@@ -1,50 +1,69 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Dict, Iterable, List
 
 from pinecone import Pinecone, ServerlessSpec  # type: ignore
+from pinecone.data.index import Index  # type: ignore
 
-from config import EMBEDDING_DIM, INDEX_NAME, get_pinecone_api_key
+from config import get_pinecone_api_key
 
 logger = logging.getLogger(__name__)
 
 
 class AbstractVectorRepo(ABC):
     @abstractmethod
-    def insert(self, namespace: str, key: str, vec: List[float]) -> None:
+    def insert(
+        self, index_name: str, namespace: str, key: str, vec: List[float]
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
     def query(
-        self, namespace: str, vec: List[float], top_k: int = 5
+        self, index_name: str, namespace: str, vec: List[float], top_k: int = 5
     ) -> List[str]:
         raise NotImplementedError
 
 
 class PineconeRepo(AbstractVectorRepo):
-    def __init__(self):
-        pc = Pinecone(api_key=get_pinecone_api_key())
+    def __init__(
+        self,
+        index_names: Iterable[str],
+        index_dims: Iterable[int],
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self._pc = Pinecone(api_key=get_pinecone_api_key())
+        self._indexes: Dict[str, Index] = {
+            name: self._get_or_create_index(name, dim)
+            for name, dim in zip(index_names, index_dims)
+        }
 
-        if not pc.has_index(INDEX_NAME):
-            logger.info(f"Creating index {INDEX_NAME}")
-            pc.create_index(
-                name=INDEX_NAME,
-                dimension=EMBEDDING_DIM,
+    def _get_or_create_index(
+        self, index_name: str, index_dim: int
+    ) -> Index:
+        if not self._pc.has_index(index_name):
+            logger.info(f"Creating index {index_name}")
+            self._pc.create_index(
+                name=index_name,
+                dimension=index_dim,
                 metric="cosine",
                 spec=ServerlessSpec(cloud="aws", region="us-east-1"),
             )
-        self._index = pc.Index(INDEX_NAME)
+        return self._pc.Index(index_name)
 
-    def insert(self, namespace: str, key: str, vec: List[float]) -> None:
-        logger.info(f"Inserting {key=} in {namespace=}")
-        self._index.upsert(
+    def insert(
+        self, index_name: str, namespace: str, key: str, vec: List[float]
+    ) -> None:
+        logger.info(f"Inserting {index_name=} {namespace=} {key=}")
+        self._indexes[index_name].upsert(
             vectors=[{"id": key, "values": vec}], namespace=namespace
         )
 
     def query(
-        self, namespace: str, vec: List[float], top_k: int = 5
+        self, index_name: str, namespace: str, vec: List[float], top_k: int = 5
     ) -> List[str]:
-        results = self._index.query(
+        results = self._indexes[index_name].query(
             namespace=namespace,
             vector=vec,
             top_k=top_k,

@@ -23,6 +23,7 @@ def _norm(features: torch.Tensor):
 class CLIPMixin:
     """Singleton CLIP model for shared processor"""
 
+    EMBEDDING_DIM = 512
     _instance: Optional["CLIPMixin"] = None
     _processor: CLIPProcessor
 

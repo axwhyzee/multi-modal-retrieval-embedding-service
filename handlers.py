@@ -22,8 +22,8 @@ def _user_from_key(key: str) -> str:
     return key.split("/")[0]
 
 
-def _get_vec_repo_namespace(user: str, elem: Element) -> str:
-    return f"{user}__{elem}"
+def _get_vec_repo_idx_name(elem: Element) -> str:
+    return elem.value
 
 
 @inject
@@ -43,12 +43,14 @@ def handle_element(
     """
     logger.info(f"Handling ElementStored: {event=}")
     key = event.key
-    user = _user_from_key(key)
     model = model_factory[event.__class__]
-    elem = ELEM_TYPES[event.__class__]
-    vec = model.embed(storage[key])    
-    namespace = _get_vec_repo_namespace(user, elem)
-    vec_repo.insert(namespace, key, vec)
+    event_elem = ELEM_TYPES[event.__class__]
+    vec_repo.insert(
+        index_name=_get_vec_repo_idx_name(event_elem),
+        namespace=_user_from_key(key), 
+        key=key, 
+        vec=model.embed(storage[key])
+    )
 
 
 @inject
@@ -82,8 +84,12 @@ def handle_query_text(
 
     for elem in Element:
         # query vector repo for candidates
-        namespace = _get_vec_repo_namespace(user, elem)
-        keys = vec_repo.query(namespace, query_vec, top_n * TOP_N_MULTIPLIER)
+        keys = vec_repo.query(
+            index_name=_get_vec_repo_idx_name(elem), 
+            namespace=user,
+            vec=query_vec, 
+            top_k=top_n * TOP_N_MULTIPLIER
+        )
         logger.info(f"Found {len(keys)} candidates")
 
         if len(keys) < top_n:

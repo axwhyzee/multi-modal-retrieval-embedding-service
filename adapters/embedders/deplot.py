@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 class DePlotModel(PlotModel):
 
+    EMBEDDING_DIM = 512
+
     def __init__(self, text_model: TextModel):
         logger.info("Initializing google/deplot")
         self._processor = Pix2StructProcessor.from_pretrained("google/deplot")
