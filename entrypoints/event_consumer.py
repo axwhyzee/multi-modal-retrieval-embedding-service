@@ -2,6 +2,7 @@ import logging
 
 from event_core.adapters.pubsub import RedisConsumer
 from event_core.domain.events import (
+    CodeElementStored,
     ImageElementStored,
     PlotElementStored,
     TextElementStored,
@@ -19,6 +20,7 @@ def main():
         consumer.subscribe(ImageElementStored)
         consumer.subscribe(TextElementStored)
         consumer.subscribe(PlotElementStored)
+        consumer.subscribe(CodeElementStored)
         consumer.listen(handle_element)
 
 
