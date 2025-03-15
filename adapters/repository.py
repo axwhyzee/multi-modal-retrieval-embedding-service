@@ -36,7 +36,7 @@ class PineconeRepo(AbstractVectorRepo):
         self._pc = Pinecone(api_key=get_pinecone_api_key())
         self._indexes: Dict[str, Index] = {
             name: self._get_or_create_index(name, dim)
-            for name, dim in zip(index_names, index_dims)
+            for name, dim in zip(map(str.lower, index_names), index_dims)
         }
 
     def _get_or_create_index(self, index_name: str, index_dim: int) -> Index:
@@ -53,6 +53,7 @@ class PineconeRepo(AbstractVectorRepo):
     def insert(
         self, index_name: str, namespace: str, key: str, vec: List[float]
     ) -> None:
+        index_name = index_name.lower()
         logger.info(f"Inserting {index_name=} {namespace=} {key=}")
         self._indexes[index_name].upsert(
             vectors=[{"id": key, "values": vec}], namespace=namespace
@@ -61,6 +62,7 @@ class PineconeRepo(AbstractVectorRepo):
     def query(
         self, index_name: str, namespace: str, vec: List[float], top_k: int = 5
     ) -> List[str]:
+        index_name = index_name.lower()
         results = self._indexes[index_name].query(
             namespace=namespace,
             vector=vec,
