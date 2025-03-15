@@ -47,9 +47,9 @@ def handle_element(
     event_elem = ELEM_TYPES[event.__class__]
     vec_repo.insert(
         index_name=_get_vec_repo_idx_name(event_elem),
-        namespace=_user_from_key(key), 
-        key=key, 
-        vec=model.embed(storage[key])
+        namespace=_user_from_key(key),
+        key=key,
+        vec=model.embed(storage[key]),
     )
 
 
@@ -85,10 +85,10 @@ def handle_query_text(
     for elem in Element:
         # query vector repo for candidates
         keys = vec_repo.query(
-            index_name=_get_vec_repo_idx_name(elem), 
+            index_name=_get_vec_repo_idx_name(elem),
             namespace=user,
-            vec=query_vec, 
-            top_k=top_n * TOP_N_MULTIPLIER
+            vec=query_vec,
+            top_k=top_n * TOP_N_MULTIPLIER,
         )
         logger.info(f"Found {len(keys)} candidates")
 

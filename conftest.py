@@ -1,11 +1,16 @@
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List
-from collections import defaultdict
 
 import pytest
 
+from adapters.embedders import (
+    CLIPTextModel,
+    CLIPVisionModel,
+    DePlotModel,
+    UniXCoderModel,
+)
 from adapters.repository import AbstractVectorRepo
-from adapters.embedders import CLIPTextModel, CLIPVisionModel, DePlotModel, UniXCoderModel
 
 VectorT = List[float]
 NamespaceT = Dict[str, Dict[str, VectorT]]
@@ -19,7 +24,9 @@ class FakeVectorRepo(AbstractVectorRepo):
         self._namespaces: NamespaceT = defaultdict(dict)
         self._indexes: Dict[str, NamespaceT] = defaultdict(dict)
 
-    def insert(self, index_name: str, namespace: str, key: str, vec: List[float]) -> None:
+    def insert(
+        self, index_name: str, namespace: str, key: str, vec: List[float]
+    ) -> None:
         self._indexes[index_name][namespace][key] = vec
 
     def query(

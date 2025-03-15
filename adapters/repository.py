@@ -39,9 +39,7 @@ class PineconeRepo(AbstractVectorRepo):
             for name, dim in zip(index_names, index_dims)
         }
 
-    def _get_or_create_index(
-        self, index_name: str, index_dim: int
-    ) -> Index:
+    def _get_or_create_index(self, index_name: str, index_dim: int) -> Index:
         if not self._pc.has_index(index_name):
             logger.info(f"Creating index {index_name}")
             self._pc.create_index(
