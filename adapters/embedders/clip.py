@@ -1,6 +1,6 @@
 import logging
 from io import BytesIO
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 import torch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -15,27 +15,21 @@ from adapters.embedders.base import TextModel, VisionModel
 
 logger = logging.getLogger(__name__)
 
-
 def _norm(features: torch.Tensor):
     return features / features.norm(dim=-1, keepdim=True)
 
 
 class CLIPMixin:
-    """Singleton CLIP model for shared processor"""
-
     EMBEDDING_DIM = 512
-    _instance: Optional["CLIPMixin"] = None
-    _processor: CLIPProcessor
+    _processor: ClassVar[Optional[CLIPProcessor]] = None
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
+    def __init__(self):
+        if not CLIPMixin._processor:
             logger.info("Initializing openai/clip-vit-base-patch32 processor")
-            cls._instance = super().__new__(cls, *args, **kwargs)
-            cls._instance._processor = CLIPProcessor.from_pretrained(
+            CLIPMixin._processor = CLIPProcessor.from_pretrained(
                 "openai/clip-vit-base-patch32",
                 local_files_only=True,
             )
-        return cls._instance
 
 
 class CLIPVisionModel(VisionModel, CLIPMixin):
@@ -61,6 +55,7 @@ class CLIPVisionModel(VisionModel, CLIPMixin):
 
 
 class CLIPTextModel(TextModel, CLIPMixin):
+
     def __init__(self):
         logger.info("Initializing openai/clip-vit-base-patch32 text model")
         super().__init__()
