@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_cors import CORS
 
 from bootstrap import bootstrap
-from services.handlers import handle_query_text
+from handlers import handle_query_text
 
 logger = logging.getLogger(__name__)
 

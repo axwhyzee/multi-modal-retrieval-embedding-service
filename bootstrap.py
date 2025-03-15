@@ -1,10 +1,21 @@
 from dependency_injector import containers, providers
 from event_core.adapters.services.storage import StorageAPIClient
-from event_core.domain.types import Modal
+from event_core.domain.events.elements import (
+    CodeElementStored,
+    ImageElementStored,
+    PlotElementStored,
+    TextElementStored,
+)
+from event_core.domain.types import Element
 
-from adapters.embedder import CLIPTextModel, CLIPVisionModel, DePlotModel
+from adapters.embedders import (
+    CLIPTextModel,
+    CLIPVisionModel,
+    DePlotModel,
+    UniXCoderModel,
+)
 from adapters.repository import PineconeRepo
-from adapters.reranker import BgeReranker, ColpaliReranker
+from adapters.rerankers import BgeReranker, ColpaliReranker
 
 MODULES = (
     "services.handlers",
@@ -13,20 +24,34 @@ MODULES = (
 
 
 class DIContainer(containers.DeclarativeContainer):
-    vec_repo = providers.Singleton(PineconeRepo)
-    text_model = providers.Singleton(CLIPTextModel)
-    vision_model = providers.Singleton(CLIPVisionModel)
-    plot_model = providers.Singleton(DePlotModel, text_model)
-    storage = providers.Singleton(StorageAPIClient)
 
-    _copali_reranker = providers.Singleton(ColpaliReranker)
-    _bge_reranker = providers.Singleton(BgeReranker)
-    rerankers = providers.Dict(
+    # embedding models
+    text_model = providers.Singleton(CLIPTextModel)
+    _vision_model = providers.Singleton(CLIPVisionModel)
+    _plot_model = providers.Singleton(DePlotModel, text_model)
+    _code_model = providers.Singleton[UniXCoderModel]
+    model_factory = providers.Dict(
         {
-            Modal.IMAGE: _copali_reranker,
-            Modal.TEXT: _bge_reranker,
+            CodeElementStored: _code_model,
+            ImageElementStored: _vision_model,
+            TextElementStored: text_model,
+            PlotElementStored: _plot_model,
         }
     )
+
+    # reranker models
+    _copali_reranker = providers.Singleton(ColpaliReranker)
+    _bge_reranker = providers.Singleton(BgeReranker)
+    reranker_factory = providers.Dict(
+        {
+            Element.IMAGE: _copali_reranker,
+            Element.TEXT: _bge_reranker,
+        }
+    )
+
+    # external services
+    vec_repo = providers.Singleton(PineconeRepo)
+    storage = providers.Singleton(StorageAPIClient)
 
 
 def bootstrap(lazy_load: bool = True) -> None:
@@ -34,8 +59,6 @@ def bootstrap(lazy_load: bool = True) -> None:
 
     if not lazy_load:
         # avoid lazy instantiation which times out requests
-        container.text_model()
-        container.vision_model()
-        container.plot_model()
-        container.rerankers()
+        container.reranker_factory()
+        container.model_factory()
     container.wire(modules=MODULES)

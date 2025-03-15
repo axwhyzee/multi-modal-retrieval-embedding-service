@@ -1,13 +1,14 @@
 import pytest
-from event_core.domain.events import (
+from event_core.domain.events.elements import (
     ElementStored,
     ImageElementStored,
     PlotElementStored,
     TextElementStored,
+    CodeElementStored,
 )
-from event_core.domain.types import EXT_TO_MODAL, path_to_ext
+from event_core.domain.events.elements import ELEM_TYPES
 
-from services.handlers import _get_vec_repo_namespace, _user_from_key
+from handlers import _get_vec_repo_namespace, _user_from_key
 
 
 @pytest.mark.parametrize(
@@ -38,7 +39,11 @@ def test_user_from_key(key: str, expected_user: str) -> None:
         ),
         (
             PlotElementStored(key="user3/table.png"),
-            "user3__IMAGE",
+            "user3__PLOT",
+        ),
+        (
+            CodeElementStored(key="user4/code.py"),
+            "user4__CODE",
         ),
     ),
 )
@@ -46,7 +51,6 @@ def test_namespace_from_event(
     event: ElementStored, expected_namespace: str
 ) -> None:
     user = _user_from_key(event.key)
-    ext = path_to_ext(event.key)
-    modal = EXT_TO_MODAL[ext]
-    namespace = _get_vec_repo_namespace(user, modal)
+    elem = ELEM_TYPES[event.__class__]
+    namespace = _get_vec_repo_namespace(user, elem)
     assert namespace == expected_namespace

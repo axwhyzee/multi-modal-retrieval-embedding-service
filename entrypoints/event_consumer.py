@@ -8,7 +8,7 @@ from event_core.domain.events import (
 )
 
 from bootstrap import bootstrap
-from services.handlers import handle_element
+from handlers import handle_element
 
 logger = logging.getLogger(__name__)
 

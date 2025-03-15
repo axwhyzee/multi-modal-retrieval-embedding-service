@@ -1,17 +1,16 @@
 import logging
-from typing import Dict, Iterable, Iterator, List, TypeAlias
+from typing import Dict, Iterable, Iterator, List, Type, TypeAlias
 
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.storage import StorageClient
-from event_core.domain.events import ElementStored
-from event_core.domain.types import EXT_TO_MODAL, Modal, path_to_ext
+from event_core.domain.events.elements import ELEM_TYPES, ElementStored
+from event_core.domain.types import Element
 
-from adapters.embedder import AbstractEmbeddingModel
+from adapters.embedders.base import AbstractEmbeddingModel
 from adapters.repository import AbstractVectorRepo
-from adapters.reranker import AbstractReranker
+from adapters.rerankers.base import AbstractReranker
 from bootstrap import DIContainer
 from config import TOP_N_MULTIPLIER
-from services.factory import model_factory
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +22,18 @@ def _user_from_key(key: str) -> str:
     return key.split("/")[0]
 
 
-def _get_vec_repo_namespace(user: str, modal: Modal) -> str:
-    return f"{user}__{modal}"
+def _get_vec_repo_namespace(user: str, elem: Element) -> str:
+    return f"{user}__{elem}"
 
 
 @inject
 def handle_element(
     event: ElementStored,
-    vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     storage: StorageClient = Provide[DIContainer.storage],
+    vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
+    model_factory: Dict[Type[ElementStored], AbstractEmbeddingModel] = Provide[
+        DIContainer.model_factory
+    ],
 ) -> None:
     """
     1. Fetch element object
@@ -42,11 +44,10 @@ def handle_element(
     logger.info(f"Handling ElementStored: {event=}")
     key = event.key
     user = _user_from_key(key)
-    ext = path_to_ext(key)
-    modal = EXT_TO_MODAL[ext]
-    model = model_factory(event)
-    vec = model.embed(storage[key])
-    namespace = _get_vec_repo_namespace(user, modal)
+    model = model_factory[event.__class__]
+    elem = ELEM_TYPES[event.__class__]
+    vec = model.embed(storage[key])    
+    namespace = _get_vec_repo_namespace(user, elem)
     vec_repo.insert(namespace, key, vec)
 
 
@@ -55,10 +56,12 @@ def handle_query_text(
     user: str,
     text: str,
     top_n: int,
+    storage: StorageClient = Provide[DIContainer.storage],
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     text_model: AbstractEmbeddingModel = Provide[DIContainer.text_model],
-    rerankers: Dict[Modal, AbstractReranker] = Provide[DIContainer.rerankers],
-    storage: StorageClient = Provide[DIContainer.storage],
+    reranker_factory: Dict[Element, AbstractReranker] = Provide[
+        DIContainer.reranker_factory
+    ],
 ) -> KeysT:
     """
     1. For each element type, use the corresponding embedding model to
@@ -77,9 +80,9 @@ def handle_query_text(
     res: KeysT = []
     query_vec = text_model.embed(text.encode("utf-8"))
 
-    for modal in Modal:
+    for elem in Element:
         # query vector repo for candidates
-        namespace = _get_vec_repo_namespace(user, modal)
+        namespace = _get_vec_repo_namespace(user, elem)
         keys = vec_repo.query(namespace, query_vec, top_n * TOP_N_MULTIPLIER)
         logger.info(f"Found {len(keys)} candidates")
 
@@ -88,7 +91,9 @@ def handle_query_text(
             continue
 
         # rerank candidates
-        reranker = rerankers[modal]
-        ranks = reranker.rerank(text, _generate_objs(keys), top_n)
-        res.extend([keys[i] for i in ranks])
+        if reranker := reranker_factory[elem]:
+            ranks = reranker.rerank(text, _generate_objs(keys), top_n)
+            res.extend([keys[i] for i in ranks])
+        else:
+            res.extend(keys[:top_n])
     return res
