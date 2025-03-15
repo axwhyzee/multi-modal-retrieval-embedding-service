@@ -15,6 +15,7 @@ from adapters.embedders.base import TextModel, VisionModel
 
 logger = logging.getLogger(__name__)
 
+
 def _norm(features: torch.Tensor):
     return features / features.norm(dim=-1, keepdim=True)
 
