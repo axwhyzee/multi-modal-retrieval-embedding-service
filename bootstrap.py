@@ -17,10 +17,7 @@ from adapters.embedders import (
 from adapters.repository import PineconeRepo
 from adapters.rerankers import BgeReranker, ColpaliReranker
 
-MODULES = (
-    "services.handlers",
-    "services.factory",
-)
+MODULES = ("handlers",)
 
 
 class DIContainer(containers.DeclarativeContainer):
