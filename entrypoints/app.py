@@ -25,7 +25,7 @@ def query_text():
     user: str = request.args["user"]
     text: str = request.args["text"]
     top_n = int(request.args["top_n"])
-    exclude_elems = request.get("exclude_elems", [])
+    exclude_elems = request.args.get("exclude_elems", [])
     return handle_query_text(user, text, top_n, exclude_elems)
 
 
