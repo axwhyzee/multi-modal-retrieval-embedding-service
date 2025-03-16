@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Iterable, Iterator, List, Type, TypeAlias
+from typing import Dict, Iterable, Iterator, List, Optional, Type, TypeAlias
 
 from dependency_injector.wiring import Provide, inject
 from event_core.adapters.services.storage import StorageClient
@@ -65,7 +65,7 @@ def handle_query_text(
     user: str,
     text: str,
     top_n: int,
-    exclude_elems: List[str],
+    exclude_elems: Optional[List[str]] = None,
     storage: StorageClient = Provide[DIContainer.storage],
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     query_model_factory: Dict[Element, AbstractEmbeddingModel] = Provide[
@@ -93,7 +93,7 @@ def handle_query_text(
     enc_text = text.encode("utf-8")
 
     for elem, text_model in query_model_factory.items():
-        if elem.value in exclude_elems:
+        if exclude_elems and elem.value in exclude_elems:
             continue
 
         # query vector repo for candidates
