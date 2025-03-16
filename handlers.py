@@ -65,6 +65,7 @@ def handle_query_text(
     user: str,
     text: str,
     top_n: int,
+    exclude_elems: List[str],
     storage: StorageClient = Provide[DIContainer.storage],
     vec_repo: AbstractVectorRepo = Provide[DIContainer.vec_repo],
     query_model_factory: Dict[Element, AbstractEmbeddingModel] = Provide[
@@ -92,6 +93,9 @@ def handle_query_text(
     enc_text = text.encode("utf-8")
 
     for elem, text_model in query_model_factory.items():
+        if elem.value in exclude_elems:
+            continue
+
         # query vector repo for candidates
         query_vec = text_model.embed(enc_text)
         keys = vec_repo.query(
